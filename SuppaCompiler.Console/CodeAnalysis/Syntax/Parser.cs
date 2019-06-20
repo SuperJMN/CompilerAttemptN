@@ -4,10 +4,10 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
 {
     internal sealed class Parser
     {
-        private readonly SyntaxToken[] _tokens;
+        private readonly SyntaxToken[] tokens;
 
-        private List<string> _diagnostics = new List<string>();
-        private int _position;
+        private List<string> diagnostics = new List<string>();
+        private int position;
 
         public Parser(string text)
         {
@@ -26,19 +26,19 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
                 }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
-            _tokens = tokens.ToArray();
-            _diagnostics.AddRange(lexer.Diagnostics);
+            this.tokens = tokens.ToArray();
+            diagnostics.AddRange(lexer.Diagnostics);
         }
 
-        public IEnumerable<string> Diagnostics => _diagnostics;
+        public IEnumerable<string> Diagnostics => diagnostics;
 
         private SyntaxToken Peek(int offset)
         {
-            var index = _position + offset;
-            if (index >= _tokens.Length)
-                return _tokens[_tokens.Length - 1];
+            var index = position + offset;
+            if (index >= tokens.Length)
+                return tokens[tokens.Length - 1];
 
-            return _tokens[index];
+            return tokens[index];
         }
 
         private SyntaxToken Current => Peek(0);
@@ -46,7 +46,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
         private SyntaxToken NextToken()
         {
             var current = Current;
-            _position++;
+            position++;
             return current;
         }
 
@@ -55,7 +55,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
             if (Current.Kind == kind)
                 return NextToken();
 
-            _diagnostics.Add($"ERROR: Unexpected token <{Current.Kind}>, expected <{kind}>");
+            diagnostics.Add($"ERROR: Unexpected token <{Current.Kind}>, expected <{kind}>");
             return new SyntaxToken(kind, Current.Position, null, null);
         }
 
@@ -63,7 +63,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
         {
             var expresion = ParseExpression();
             var endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(_diagnostics, expresion, endOfFileToken);
+            return new SyntaxTree(diagnostics, expresion, endOfFileToken);
         }
 
         private ExpressionSyntax ParseExpression(int parentPrecedence = 0)

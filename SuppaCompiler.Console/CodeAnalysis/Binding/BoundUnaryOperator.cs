@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using SuppaCompiler.Console.CodeAnalysis.Syntax;
 
 namespace SuppaCompiler.Console.CodeAnalysis.Binding
@@ -23,23 +24,16 @@ namespace SuppaCompiler.Console.CodeAnalysis.Binding
         public Type OperandType { get; }
         public Type Type { get; }
 
-        private static BoundUnaryOperator[] _operators =
+        private static readonly BoundUnaryOperator[] Operators =
         {
             new BoundUnaryOperator(SyntaxKind.BangToken, BoundUnaryOperatorKind.LogicalNegation, typeof(bool)),
-
             new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, typeof(int)),
             new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, typeof(int)),
         };
 
         public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, Type operandType)
         {
-            foreach (var op in _operators)
-            {
-                if (op.SyntaxKind == syntaxKind && op.OperandType == operandType)
-                    return op;
-            }
-
-            return null;
+            return Operators.FirstOrDefault(op => op.SyntaxKind == syntaxKind && op.OperandType == operandType);
         }
     }
 }

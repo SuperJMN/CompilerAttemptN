@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Superpower;
 using SuppaCompiler.Console.CodeAnalysis;
@@ -41,8 +40,7 @@ namespace SuppaCompiler.Console
                     var binder = new Binder();
                     var boundExpression = binder.BindExpression(syntaxTree.Root);
                     var diagnostics = binder.Diagnostics.ToArray();
-
-
+                    
                     if (showTree)
                     {
                         System.Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -83,7 +81,7 @@ namespace SuppaCompiler.Console
             System.Console.Write(marker);
             System.Console.Write(node.Kind);
 
-            if (node is CodeAnalysis.Syntax.SyntaxToken t && t.Value != null)
+            if (node is SyntaxToken t && t.Value != null)
             {
                 System.Console.Write(" ");
                 System.Console.Write(t.Value);
@@ -96,7 +94,9 @@ namespace SuppaCompiler.Console
             var lastChild = node.GetChildren().LastOrDefault();
 
             foreach (var child in node.GetChildren())
+            {
                 PrettyPrint(child, indent, child == lastChild);
+            }
         }
     }
 }

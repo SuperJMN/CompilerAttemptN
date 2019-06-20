@@ -1,42 +1,40 @@
 ﻿using System.Collections.Generic;
 using Superpower;
-using Superpower.Model;
 using Superpower.Parsers;
 using SuppaCompiler.Console.CodeAnalysis.Syntax;
-using SyntaxTokenParser = Superpower.TokenListParser<SuppaCompiler.Console.CodeAnalysis.Syntax.SyntaxKind, SuppaCompiler.Console.CodeAnalysis.Syntax.SyntaxToken>;
-using Parser = Superpower.TokenListParser<SuppaCompiler.Console.CodeAnalysis.Syntax.SyntaxKind, SuppaCompiler.Console.CodeAnalysis.Syntax.ExpressionSyntax>;
+using TokenParser = Superpower.TokenListParser<SuppaCompiler.Console.CodeAnalysis.Syntax.SyntaxKind, SuppaCompiler.Console.CodeAnalysis.Syntax.SyntaxToken>;
+using ExpressionParser = Superpower.TokenListParser<SuppaCompiler.Console.CodeAnalysis.Syntax.SyntaxKind, SuppaCompiler.Console.CodeAnalysis.Syntax.ExpressionSyntax>;
 
 namespace SuppaCompiler.Console.CodeAnalysis.Superpower
 {
     public static class Parsers
     {
-        private static readonly TokenListParser<SyntaxKind, ExpressionSyntax> Number = Token.EqualTo(SyntaxKind.NumberToken)
-            .Select(x => (ExpressionSyntax) new LiteralExpressionSyntax(ToSyntaxToken(x), Numerics.IntegerInt32(x.Span).Value));
+        private static readonly TokenParser Addition = Token.EqualTo(SyntaxKind.PlusToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Subtraction = Token.EqualTo(SyntaxKind.MinusToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Multiplication = Token.EqualTo(SyntaxKind.StarToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Division = Token.EqualTo(SyntaxKind.SlashToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser And = Token.EqualTo(SyntaxKind.AmpersandAmpersandToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Or = Token.EqualTo(SyntaxKind.PipePipeToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Equal = Token.EqualTo(SyntaxKind.EqualsEqualsToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser NotEqual = Token.EqualTo(SyntaxKind.BangEqualsToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Negation = Token.EqualTo(SyntaxKind.BangToken).Select(ParserExtensions.ToToken);
 
-        private static readonly SyntaxTokenParser Addition = Token.EqualTo(SyntaxKind.PlusToken).Select(ToSyntaxToken);
-        private static readonly SyntaxTokenParser Subtraction = Token.EqualTo(SyntaxKind.MinusToken).Select(ToSyntaxToken);
-        private static readonly SyntaxTokenParser Multiplication = Token.EqualTo(SyntaxKind.StarToken).Select(ToSyntaxToken);
-        private static readonly SyntaxTokenParser Division = Token.EqualTo(SyntaxKind.SlashToken).Select(ToSyntaxToken);
+        private static readonly ExpressionParser True = Token.EqualTo(SyntaxKind.TrueKeyword).Select(x => x.ToToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
+        private static readonly ExpressionParser False = Token.EqualTo(SyntaxKind.FalseKeyword).Select(x => x.ToToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
+        private static readonly ExpressionParser BooleanValue = True.Or(False);
+        private static readonly ExpressionParser Number = Token.EqualTo(SyntaxKind.NumberToken)
+            .Select(x => x.ToToken().ToLiteral(Numerics.IntegerInt32(x.Span).Value));
 
-        private static readonly Parser ParenthesizedExpresion = Parse.Ref(() => Expression.Between(Token.EqualTo(SyntaxKind.OpenParenthesisToken), Token.EqualTo(SyntaxKind.CloseParenthesisToken)));
+        private static readonly ExpressionParser Item = BooleanValue.Or(Number);
+        private static readonly ExpressionParser ParenthesizedExpresion = Parse.Ref(() => Expression.Between(Token.EqualTo(SyntaxKind.OpenParenthesisToken), Token.EqualTo(SyntaxKind.CloseParenthesisToken)));
+        private static readonly ExpressionParser Operand = ParenthesizedExpresion.Or(Item);
+        private static readonly ExpressionParser Multiplicand = Parse.Chain(Multiplication.Or(Division), Operand, ParserExtensions.ToBinary);
+        private static readonly ExpressionParser Addend = Parse.Chain(Addition.Or(Subtraction), Multiplicand, ParserExtensions.ToBinary);
+        private static readonly ExpressionParser Disjunction = Parse.Chain(And.Or(Or), Addend, ParserExtensions.ToBinary);
+        private static readonly ExpressionParser Equality = Parse.Chain(Equal.Or(NotEqual), Disjunction, ParserExtensions.ToBinary);
+        private static readonly ExpressionParser Expression = from unaryOp in Subtraction.Or(Addition).Or(Negation).OptionalOrDefault()
+            from expr in Equality select unaryOp != null ? new UnaryExpressionSyntax(unaryOp, expr) : expr;
 
-        private static readonly Parser Operand = ParenthesizedExpresion.Or(Number);
-        private static readonly Parser Multiplicand = Parse.Chain(Multiplication.Or(Division), Operand, ToBinary);
-        private static readonly Parser Addend = Parse.Chain(Addition.Or(Subtraction), Multiplicand, ToBinary);
-        private static readonly Parser Expression = from unaryOp in Subtraction.Or(Addition).OptionalOrDefault()
-            from expr in Addend
-            select unaryOp != null ? new UnaryExpressionSyntax(unaryOp, expr) : expr;
-
-        public static readonly TokenListParser<SyntaxKind, SyntaxTree> Tree = Expression.Select(x => new SyntaxTree(new List<string>(), x, null));
-
-        private static SyntaxToken ToSyntaxToken(Token<SyntaxKind> token)
-        {
-            return new SyntaxToken(token.Kind, token.Position.Absolute, token.Span.Source, null);
-        }
-
-        private static ExpressionSyntax ToBinary(SyntaxToken op, ExpressionSyntax left, ExpressionSyntax right)
-        {
-            return new BinaryExpressionSyntax(left, op, right);
-        }
+        public static readonly TokenListParser<SyntaxKind, SyntaxTree> Tree = Expression.AtEnd().Select(x => new SyntaxTree(new List<string>(), x, null));
     }
 }

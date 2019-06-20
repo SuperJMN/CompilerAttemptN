@@ -5,16 +5,16 @@ namespace SuppaCompiler.Console.CodeAnalysis
 {
     internal sealed class Evaluator
     {
-        private readonly BoundExpression _root;
+        private readonly BoundExpression root;
 
         public Evaluator(BoundExpression root)
         {
-            _root = root;
+            this.root = root;
         }
 
         public object Evaluate()
         {
-            return EvaluateExpression(_root);
+            return EvaluateExpression(root);
         }
 
         private object EvaluateExpression(BoundExpression node)

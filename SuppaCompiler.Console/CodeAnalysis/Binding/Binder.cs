@@ -6,20 +6,20 @@ namespace SuppaCompiler.Console.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
-        private readonly List<string> _diagnostics = new List<string>();
+        private readonly List<string> diagnostics = new List<string>();
 
-        public IEnumerable<string> Diagnostics => _diagnostics;
+        public IEnumerable<string> Diagnostics => diagnostics;
 
         public BoundExpression BindExpression(ExpressionSyntax syntax)
         {
-            switch (syntax.Kind)
+            switch (syntax)
             {
-                case SyntaxKind.LiteralExpression:
-                    return BindLiteralExpression((LiteralExpressionSyntax)syntax);
-                case SyntaxKind.UnaryExpression:
-                    return BindUnaryExpression((UnaryExpressionSyntax)syntax);
-                case SyntaxKind.BinaryExpression:
-                    return BindBinaryExpression((BinaryExpressionSyntax)syntax);
+                case LiteralExpressionSyntax e:
+                    return BindLiteralExpression(e);
+                case UnaryExpressionSyntax e:
+                    return BindUnaryExpression(e);
+                case BinaryExpressionSyntax e:
+                    return BindBinaryExpression(e);
                 default:
                     throw new Exception($"Unexpected syntax {syntax.Kind}");
             }
@@ -38,7 +38,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Binding
 
             if (boundOperator == null)
             {
-                _diagnostics.Add($"Unary operator '{syntax.OperatorToken.Text}' is not defined for type {boundOperand.Type}.");
+                diagnostics.Add($"Unary operator '{syntax.OperatorToken.Text}' is not defined for type {boundOperand.Type}.");
                 return boundOperand;
             }
 
@@ -53,7 +53,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Binding
 
             if (boundOperator == null)
             {
-                _diagnostics.Add($"Binary operator '{syntax.OperatorToken.Text}' is not defined for types {boundLeft.Type} and {boundRight.Type}.");
+                diagnostics.Add($"Binary operator '{syntax.OperatorToken.Text}' is not defined for types {boundLeft.Type} and {boundRight.Type}.");
                 return boundLeft;
             }
 

@@ -32,7 +32,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Binding
         public Type RightTye { get; }
         public Type Type { get; }
 
-        private static BoundBinaryOperator[] _operators =
+        private static BoundBinaryOperator[] operators =
         {
             new BoundBinaryOperator(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Addition, typeof(int)),
             new BoundBinaryOperator(SyntaxKind.MinusToken, BoundBinaryOperatorKind.Subtraction, typeof(int)),
@@ -49,7 +49,7 @@ namespace SuppaCompiler.Console.CodeAnalysis.Binding
 
         public static BoundBinaryOperator Bind(SyntaxKind syntaxKind, Type leftType, Type rightType)
         {
-            foreach (var op in _operators)
+            foreach (var op in operators)
             {
                 if (op.SyntaxKind == syntaxKind && op.LeftType == leftType && op.RightTye == rightType)
                     return op;

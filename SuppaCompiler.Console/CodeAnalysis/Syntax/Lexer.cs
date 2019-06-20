@@ -4,16 +4,16 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
 {
     internal sealed class Lexer
     {
-        private readonly string _text;
-        private int _position;
-        private List<string> _diagnostics = new List<string>();
+        private readonly string text;
+        private int position;
+        private List<string> diagnostics = new List<string>();
 
         public Lexer(string text)
         {
-            _text = text;
+            this.text = text;
         }
 
-        public IEnumerable<string> Diagnostics => _diagnostics;
+        public IEnumerable<string> Diagnostics => diagnostics;
 
         private char Current => Peek(0);
 
@@ -21,60 +21,60 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
 
         private char Peek(int offset)
         {
-            var index = _position + offset;
+            var index = position + offset;
 
-            if (index >= _text.Length)
+            if (index >= text.Length)
                 return '\0';
 
-            return _text[index];
+            return text[index];
         }
 
         private void Next()
         {
-            _position++;
+            position++;
         }
 
         public SyntaxToken Lex()
         {
-            if (_position >= _text.Length)
-                return new SyntaxToken(SyntaxKind.EndOfFileToken, _position, "\0", null);
+            if (position >= text.Length)
+                return new SyntaxToken(SyntaxKind.EndOfFileToken, position, "\0", null);
 
             if (char.IsDigit(Current))
             {
-                var start = _position;
+                var start = position;
 
                 while (char.IsDigit(Current))
                     Next();
 
-                var length = _position - start;
-                var text = _text.Substring(start, length);
+                var length = position - start;
+                var text = this.text.Substring(start, length);
                 if (!int.TryParse(text, out var value))
-                    _diagnostics.Add($"The number {_text} isn't valid Int32.");
+                    diagnostics.Add($"The number {this.text} isn't valid Int32.");
 
                 return new SyntaxToken(SyntaxKind.NumberToken, start, text, value);
             }
 
             if (char.IsWhiteSpace(Current))
             {
-                var start = _position;
+                var start = position;
 
                 while (char.IsWhiteSpace(Current))
                     Next();
 
-                var length = _position - start;
-                var text = _text.Substring(start, length);
+                var length = position - start;
+                var text = this.text.Substring(start, length);
                 return new SyntaxToken(SyntaxKind.WhitespaceToken, start, text, null);
             }
 
             if (char.IsLetter(Current))
             {
-                var start = _position;
+                var start = position;
 
                 while (char.IsLetter(Current))
                     Next();
 
-                var length = _position - start;
-                var text = _text.Substring(start, length);
+                var length = position - start;
+                var text = this.text.Substring(start, length);
                 var kind = SyntaxFacts.GetKeywordKind(text);
                 return new SyntaxToken(kind, start, text, null);
             }
@@ -82,38 +82,38 @@ namespace SuppaCompiler.Console.CodeAnalysis.Syntax
             switch (Current)
             {
                 case '+':
-                    return new SyntaxToken(SyntaxKind.PlusToken, _position++, "+", null);
+                    return new SyntaxToken(SyntaxKind.PlusToken, position++, "+", null);
                 case '-':
-                    return new SyntaxToken(SyntaxKind.MinusToken, _position++, "-", null);
+                    return new SyntaxToken(SyntaxKind.MinusToken, position++, "-", null);
                 case '*':
-                    return new SyntaxToken(SyntaxKind.StarToken, _position++, "*", null);
+                    return new SyntaxToken(SyntaxKind.StarToken, position++, "*", null);
                 case '/':
-                    return new SyntaxToken(SyntaxKind.SlashToken, _position++, "/", null);
+                    return new SyntaxToken(SyntaxKind.SlashToken, position++, "/", null);
                 case '(':
-                    return new SyntaxToken(SyntaxKind.OpenParenthesisToken, _position++, "(", null);
+                    return new SyntaxToken(SyntaxKind.OpenParenthesisToken, position++, "(", null);
                 case ')':
-                    return new SyntaxToken(SyntaxKind.CloseParenthesisToken, _position++, ")", null);
+                    return new SyntaxToken(SyntaxKind.CloseParenthesisToken, position++, ")", null);
                 case '&':
                     if (Lookahead == '&')
-                        return new SyntaxToken(SyntaxKind.AmpersandAmpersandToken, _position += 2, "&&", null);
+                        return new SyntaxToken(SyntaxKind.AmpersandAmpersandToken, position += 2, "&&", null);
                     break;
                 case '|':
                     if (Lookahead == '|')
-                        return new SyntaxToken(SyntaxKind.PipePipeToken, _position += 2, "||", null);
+                        return new SyntaxToken(SyntaxKind.PipePipeToken, position += 2, "||", null);
                     break;
                 case '=':
                     if (Lookahead == '=')
-                        return new SyntaxToken(SyntaxKind.EqualsEqualsToken, _position += 2, "==", null);
+                        return new SyntaxToken(SyntaxKind.EqualsEqualsToken, position += 2, "==", null);
                     break;
                 case '!':
                     if (Lookahead == '=')
-                        return new SyntaxToken(SyntaxKind.BangEqualsToken, _position += 2, "!=", null);
+                        return new SyntaxToken(SyntaxKind.BangEqualsToken, position += 2, "!=", null);
                     else
-                        return new SyntaxToken(SyntaxKind.BangToken, _position++, "!", null);
+                        return new SyntaxToken(SyntaxKind.BangToken, position++, "!", null);
             }
 
-            _diagnostics.Add($"ERROR: bad character input: '{Current}'");
-            return new SyntaxToken(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1), null);
+            diagnostics.Add($"ERROR: bad character input: '{Current}'");
+            return new SyntaxToken(SyntaxKind.BadToken, position++, text.Substring(position - 1, 1), null);
         }
     }
 }
