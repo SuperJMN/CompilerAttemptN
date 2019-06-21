@@ -89,7 +89,7 @@ namespace SuppaCompiler.Console
 
             System.Console.WriteLine();
 
-            indent += isLast ? "   " : "│   ";
+            indent += isLast ? "   " : "│  ";
 
             var lastChild = node.GetChildren().LastOrDefault();
 
