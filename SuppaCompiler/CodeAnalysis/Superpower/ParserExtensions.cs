@@ -5,7 +5,7 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
 {
     public static class ParserExtensions 
     {
-        public static SyntaxToken ToToken(this Token<SyntaxKind> token)
+        public static SyntaxToken ToSyntaxToken(this Token<SyntaxKind> token)
         {
             return ToSyntaxToken(token, null);
         }

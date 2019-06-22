@@ -12,17 +12,8 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
             Value = value;
         }
 
-        public SyntaxToken(SyntaxKind kind, int position, string text, object value)
-        {
-            Kind = kind;
-            Position = position;
-            Text = text;
-            Value = value;
-        }
-
-        public override SyntaxKind Kind { get; }
+        public override SyntaxKind Kind => InnerToken.Kind;
         public int Position { get; }
-        public string Text { get; }
         public Token<SyntaxKind> InnerToken { get; }
         public object Value { get; }
         public TextSpan Span { get; set; }

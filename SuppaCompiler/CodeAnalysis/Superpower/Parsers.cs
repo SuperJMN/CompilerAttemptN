@@ -9,21 +9,25 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
 {
     public static class Parsers
     {
-        private static readonly TokenParser Addition = Token.EqualTo(SyntaxKind.PlusToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser Subtraction = Token.EqualTo(SyntaxKind.MinusToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser Multiplication = Token.EqualTo(SyntaxKind.StarToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser Division = Token.EqualTo(SyntaxKind.SlashToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser And = Token.EqualTo(SyntaxKind.AmpersandAmpersandToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser Or = Token.EqualTo(SyntaxKind.PipePipeToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser Equal = Token.EqualTo(SyntaxKind.EqualsEqualsToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser NotEqual = Token.EqualTo(SyntaxKind.BangEqualsToken).Select(ParserExtensions.ToToken);
-        private static readonly TokenParser Negation = Token.EqualTo(SyntaxKind.BangToken).Select(ParserExtensions.ToToken);
+        private static readonly TokenParser Addition = Token.EqualTo(SyntaxKind.PlusToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Subtraction = Token.EqualTo(SyntaxKind.MinusToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Multiplication = Token.EqualTo(SyntaxKind.StarToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Division = Token.EqualTo(SyntaxKind.SlashToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser And = Token.EqualTo(SyntaxKind.AmpersandAmpersandToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Or = Token.EqualTo(SyntaxKind.PipePipeToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Equal = Token.EqualTo(SyntaxKind.EqualsEqualsToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser NotEqual = Token.EqualTo(SyntaxKind.BangEqualsToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Negation = Token.EqualTo(SyntaxKind.BangToken).Select(ParserExtensions.ToSyntaxToken);
 
-        private static readonly ExpressionParser True = Token.EqualTo(SyntaxKind.TrueKeyword).Select(x => x.ToToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
-        private static readonly ExpressionParser False = Token.EqualTo(SyntaxKind.FalseKeyword).Select(x => x.ToToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
+        private static readonly ExpressionParser True = Token.EqualTo(SyntaxKind.TrueKeyword).Select(x => x.ToSyntaxToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
+        private static readonly ExpressionParser False = Token.EqualTo(SyntaxKind.FalseKeyword).Select(x => x.ToSyntaxToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
         private static readonly ExpressionParser BooleanValue = True.Or(False);
         private static readonly ExpressionParser Number = Token.EqualTo(SyntaxKind.NumberToken)
-            .Select(x => x.ToToken().ToLiteral(Numerics.IntegerInt32(x.Span).Value));
+            .Select(x =>
+            {
+                var value = Numerics.IntegerInt32(x.Span).Value;
+                return x.ToSyntaxToken(value).ToLiteral(value);
+            });
 
         private static readonly ExpressionParser Item = BooleanValue.Or(Number);
         private static readonly ExpressionParser ParenthesizedExpresion = Parse.Ref(() => Expression.Between(Token.EqualTo(SyntaxKind.OpenParenthesisToken), Token.EqualTo(SyntaxKind.CloseParenthesisToken)));
