@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using Superpower;
-using SuppaCompiler.Console.CodeAnalysis;
-using SuppaCompiler.Console.CodeAnalysis.Binding;
-using SuppaCompiler.Console.CodeAnalysis.Superpower;
-using SuppaCompiler.Console.CodeAnalysis.Syntax;
+using SuppaCompiler.CodeAnalysis;
+using SuppaCompiler.CodeAnalysis.Superpower;
+using SuppaCompiler.CodeAnalysis.Syntax;
 
 namespace SuppaCompiler.Console
 {
@@ -37,9 +36,8 @@ namespace SuppaCompiler.Console
                 try
                 {
                     var syntaxTree = Parsers.Tree.Parse(Tokenizer.Create().Tokenize(line));
-                    var binder = new Binder();
-                    var boundExpression = binder.BindExpression(syntaxTree.Root);
-                    var diagnostics = binder.Diagnostics.ToArray();
+                    var compilation = new Compilation(syntaxTree);
+                    var result = compilation.Evaluate();
                     
                     if (showTree)
                     {
@@ -48,18 +46,18 @@ namespace SuppaCompiler.Console
                         System.Console.ResetColor();
                     }
 
-                    if (!diagnostics.Any())
+                    if (!result.Diagnostics.Any())
                     {
-                        var e = new Evaluator(boundExpression);
-                        var result = e.Evaluate();
-                        System.Console.WriteLine(result);
+                        System.Console.WriteLine(result.Value);
                     }
                     else
                     {
                         System.Console.ForegroundColor = ConsoleColor.DarkRed;
 
-                        foreach (var diagnostic in diagnostics)
+                        foreach (var diagnostic in result.Diagnostics)
+                        {
                             System.Console.WriteLine(diagnostic);
+                        }
 
                         System.Console.ResetColor();
                     }
