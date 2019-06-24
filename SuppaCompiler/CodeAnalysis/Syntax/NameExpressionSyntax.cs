@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Superpower.Parsers;
 
 namespace SuppaCompiler.CodeAnalysis.Syntax
 {
@@ -11,7 +12,10 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
         public NameExpressionSyntax(SyntaxToken identifierToken)
         {
             IdentifierToken = identifierToken;
+            Identifier = identifierToken.InnerToken.ToStringValue();
         }
+
+        public string Identifier { get; }
 
         public override IEnumerable<SyntaxNode> GetChildren()
         {

@@ -18,6 +18,7 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
                 .Match(Span.EqualTo("true"), SyntaxKind.TrueKeyword)
                 .Match(Span.EqualTo("false"), SyntaxKind.FalseKeyword)
                 .Match(Character.EqualTo('!'), SyntaxKind.BangToken)
+                .Match(Character.EqualTo('='), SyntaxKind.EqualsToken)
                 .Match(Character.EqualTo('+'), SyntaxKind.PlusToken)
                 .Match(Character.EqualTo('-'), SyntaxKind.MinusToken)
                 .Match(Character.EqualTo('*'), SyntaxKind.StarToken)

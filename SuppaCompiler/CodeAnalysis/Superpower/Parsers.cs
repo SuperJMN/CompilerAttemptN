@@ -16,9 +16,11 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
         private static readonly TokenParser And = Token.EqualTo(SyntaxKind.AmpersandAmpersandToken).Select(ParserExtensions.ToSyntaxToken);
         private static readonly TokenParser Or = Token.EqualTo(SyntaxKind.PipePipeToken).Select(ParserExtensions.ToSyntaxToken);
         private static readonly TokenParser Equal = Token.EqualTo(SyntaxKind.EqualsEqualsToken).Select(ParserExtensions.ToSyntaxToken);
+        private static readonly TokenParser Assign = Token.EqualTo(SyntaxKind.EqualsToken).Select(ParserExtensions.ToSyntaxToken);
         private static readonly TokenParser NotEqual = Token.EqualTo(SyntaxKind.BangEqualsToken).Select(ParserExtensions.ToSyntaxToken);
         private static readonly TokenParser Negation = Token.EqualTo(SyntaxKind.BangToken).Select(ParserExtensions.ToSyntaxToken);
 
+        private static readonly ExpressionParser Identifier = Token.EqualTo(SyntaxKind.IdentifierToken).Select(x => (ExpressionSyntax)new NameExpressionSyntax(x.ToSyntaxToken()));
         private static readonly ExpressionParser True = Token.EqualTo(SyntaxKind.TrueKeyword).Select(x => x.ToSyntaxToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
         private static readonly ExpressionParser False = Token.EqualTo(SyntaxKind.FalseKeyword).Select(x => x.ToSyntaxToken().ToLiteral(x.Kind == SyntaxKind.TrueKeyword));
         private static readonly ExpressionParser BooleanValue = True.Or(False);
@@ -29,7 +31,7 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
                 return x.ToSyntaxToken(value).ToLiteral(value);
             });
 
-        private static readonly ExpressionParser Item = BooleanValue.Or(Number);
+        private static readonly ExpressionParser Item = BooleanValue.Or(Number).Or(Identifier);
         
         private static readonly ExpressionParser ParenthesizedExpresion = Parse.Ref(() => Expression.Between(Token.EqualTo(SyntaxKind.OpenParenthesisToken), Token.EqualTo(SyntaxKind.CloseParenthesisToken)));
         private static readonly ExpressionParser Factor = ParenthesizedExpresion.Or(Item);
@@ -42,7 +44,10 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
         private static readonly ExpressionParser Addend = Parse.Chain(Addition.Or(Subtraction), Multiplicand, ParserExtensions.ToBinary);
         private static readonly ExpressionParser Disjunction = Parse.Chain(And.Or(Or), Addend, ParserExtensions.ToBinary);
         private static readonly ExpressionParser Equality = Parse.Chain(Equal.Or(NotEqual), Disjunction, ParserExtensions.ToBinary);
-        private static readonly ExpressionParser Expression = Equality;
+
+        private static readonly ExpressionParser Assignment = Parse.Chain(Assign, Equality,
+            (op, left, right) => new AssignmentExpressionSyntax((NameExpressionSyntax) left, op, right) as ExpressionSyntax);
+        private static readonly ExpressionParser Expression = Assignment;
 
         public static readonly TokenListParser<SyntaxKind, SyntaxTree> Tree = Expression.AtEnd().Select(x => new SyntaxTree(new List<string>(), x, null));
     }

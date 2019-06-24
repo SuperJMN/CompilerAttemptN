@@ -9,6 +9,7 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         LogicalAnd,
         LogicalOr,
         Equals,
-        NotEquals
+        NotEquals,
+        Assign
     }
 }

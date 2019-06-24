@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SuppaCompiler.CodeAnalysis.Binding;
 
 namespace SuppaCompiler.CodeAnalysis
@@ -6,10 +7,12 @@ namespace SuppaCompiler.CodeAnalysis
     internal sealed class Evaluator
     {
         private readonly BoundExpression root;
+        private readonly IDictionary<string, object> variables;
 
-        public Evaluator(BoundExpression root)
+        public Evaluator(BoundExpression root, IDictionary<string, object> variables)
         {
             this.root = root;
+            this.variables = variables;
         }
 
         public object Evaluate()
@@ -21,6 +24,19 @@ namespace SuppaCompiler.CodeAnalysis
         {
             if (node is BoundLiteralExpression n)
                 return n.Value;
+
+            if (node is BoundVariableExpression v)
+            {
+                var value = variables[v.Name];
+                return value;
+            }
+
+            if (node is BoundAssignementExpression a)
+            {
+                var value = EvaluateExpression(a.Expression);
+                variables[a.Name.Identifier] = value;
+                return value;
+            }
 
             if (node is BoundUnaryExpression u)
             {

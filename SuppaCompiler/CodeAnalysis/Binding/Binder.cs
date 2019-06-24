@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Superpower.Model;
 using SuppaCompiler.CodeAnalysis.Syntax;
@@ -7,22 +8,52 @@ namespace SuppaCompiler.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
+        private readonly IDictionary<string, object> variables;
         public readonly DiagnosticBag Diagnostics = new DiagnosticBag();
 
+        public Binder(IDictionary<string, object> variables)
+        {
+            this.variables = variables;
+        }
 
         public BoundExpression BindExpression(ExpressionSyntax syntax)
         {
-            switch (syntax)
+            switch (syntax.Kind)
             {
-                case LiteralExpressionSyntax e:
-                    return BindLiteralExpression(e);
-                case UnaryExpressionSyntax e:
-                    return BindUnaryExpression(e);
-                case BinaryExpressionSyntax e:
-                    return BindBinaryExpression(e);
+                case SyntaxKind.LiteralExpression:
+                    return BindLiteralExpression((LiteralExpressionSyntax) syntax);
+                case SyntaxKind.UnaryExpression:
+                    return BindUnaryExpression((UnaryExpressionSyntax) syntax);
+                case SyntaxKind.BinaryExpression:
+                    return BindBinaryExpression((BinaryExpressionSyntax) syntax);
+                case SyntaxKind.NameExpression:
+                    return BindNameExpression((NameExpressionSyntax)syntax);
+                case SyntaxKind.AssigmentExpression:
+                    return BindAssigmentExpression((AssignmentExpressionSyntax)syntax);
+
                 default:
                     throw new Exception($"Unexpected syntax {syntax.Kind}");
             }
+        }
+
+        private BoundExpression BindAssigmentExpression(AssignmentExpressionSyntax syntax)
+        {
+            var name = syntax.IdentifierToken;
+            var boundExpresssion = BindExpression(syntax.Expression);
+            return new BoundAssignementExpression(name, boundExpresssion);
+        }
+
+        private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
+        {
+            var name = syntax.Identifier;
+            if (variables.TryGetValue(name, out var value))
+            {
+                var type = typeof(int);
+                return new BoundVariableExpression(name, type);
+            }
+
+            Diagnostics.ReportUndefinedName(name);
+            return new BoundLiteralExpression(0);
         }
 
         private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
@@ -61,6 +92,35 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         }
     }
 
+    internal class BoundAssignementExpression : BoundExpression
+    {
+        public NameExpressionSyntax Name { get; }
+        public BoundExpression Expression { get; }
+
+        public BoundAssignementExpression(NameExpressionSyntax name, BoundExpression expression)
+        {
+            Name = name;
+            Expression = expression;
+        }
+
+        public override BoundNodeKind Kind => BoundNodeKind.AssignmentExpression;
+        public override Type Type => Expression.Type;
+    }
+
+    internal class BoundVariableExpression : BoundExpression
+    {
+        public string Name { get; }
+        public override Type Type { get; }
+
+        public BoundVariableExpression(string name, Type type)
+        {
+            Name = name;
+            Type = type;
+        }
+
+        public override BoundNodeKind Kind => BoundNodeKind.VariableExpression;
+    }
+
     internal class DiagnosticBag : Collection<Diagnostic>
     {
         private void Report(TextSpan span, string message)
@@ -76,6 +136,11 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         public void ReportUndefinedBinaryOperator(TextSpan span, string operatorStr, Type leftType, Type rightType)
         {
             Add(new Diagnostic(span, $"Cannot find operator {operatorStr} for type {leftType} and {rightType}"));
+        }
+
+        public void ReportUndefinedName(string name)
+        {
+            Add(new Diagnostic(new TextSpan(), $"Cannot find name {name}"));
         }
     }
 }

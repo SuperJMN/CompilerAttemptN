@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Superpower;
 using SuppaCompiler.CodeAnalysis;
@@ -12,6 +13,7 @@ namespace SuppaCompiler.Console
         private static void Main()
         {
             var showTree = false;
+            var variables = new Dictionary<string, object>();
 
             while (true)
             {
@@ -37,7 +39,7 @@ namespace SuppaCompiler.Console
                 {
                     var syntaxTree = Parsers.Tree.Parse(Tokenizer.Create().Tokenize(line));
                     var compilation = new Compilation(syntaxTree);
-                    var result = compilation.Evaluate();
+                    var result = compilation.Evaluate(variables);
                     
                     if (showTree)
                     {

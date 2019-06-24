@@ -3,9 +3,6 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
     public enum SyntaxKind
     {
         // Tokens
-        BadToken,
-        EndOfFileToken,
-        WhitespaceToken,
         NumberToken,
         PlusToken,
         MinusToken,
@@ -15,6 +12,7 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
         AmpersandAmpersandToken,
         PipePipeToken,
         EqualsEqualsToken,
+        EqualsToken,
         BangEqualsToken,
         OpenParenthesisToken,
         CloseParenthesisToken,
@@ -30,6 +28,6 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
         BinaryExpression,
         ParenthesizedExpression,
         NameExpression,
-        AssigmentExpression
+        AssigmentExpression,
     }
 }
