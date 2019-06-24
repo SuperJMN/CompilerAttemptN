@@ -29,5 +29,7 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
         UnaryExpression,
         BinaryExpression,
         ParenthesizedExpression,
+        NameExpression,
+        AssigmentExpression
     }
 }
