@@ -14,7 +14,7 @@ namespace SuppaCompiler.CodeAnalysis
             Syntax = syntax;
         }
 
-        public EvaluationResult Evaluate(IDictionary<string, object> variables)
+        public EvaluationResult Evaluate(IDictionary<string, Symbol> variables)
         {
             var binder = new Binder(variables);
             var boundExpression = binder.BindExpression(Syntax.Root);

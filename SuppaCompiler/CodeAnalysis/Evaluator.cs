@@ -7,9 +7,9 @@ namespace SuppaCompiler.CodeAnalysis
     internal sealed class Evaluator
     {
         private readonly BoundExpression root;
-        private readonly IDictionary<string, object> variables;
+        private readonly IDictionary<string, Symbol> variables;
 
-        public Evaluator(BoundExpression root, IDictionary<string, object> variables)
+        public Evaluator(BoundExpression root, IDictionary<string, Symbol> variables)
         {
             this.root = root;
             this.variables = variables;
@@ -27,14 +27,15 @@ namespace SuppaCompiler.CodeAnalysis
 
             if (node is BoundVariableExpression v)
             {
-                var value = variables[v.Name];
-                return value;
+                var symbol = variables[v.Name];
+                return symbol.Value;
             }
 
             if (node is BoundAssignementExpression a)
             {
                 var value = EvaluateExpression(a.Expression);
-                variables[a.Name.Identifier] = value;
+                var symbol = variables[a.Name.Identifier];
+                symbol.Value = value;
                 return value;
             }
 

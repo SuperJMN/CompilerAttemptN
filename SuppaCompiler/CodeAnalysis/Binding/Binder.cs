@@ -8,10 +8,10 @@ namespace SuppaCompiler.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
-        private readonly IDictionary<string, object> variables;
+        private readonly IDictionary<string, Symbol> variables;
         public readonly DiagnosticBag Diagnostics = new DiagnosticBag();
 
-        public Binder(IDictionary<string, object> variables)
+        public Binder(IDictionary<string, Symbol> variables)
         {
             this.variables = variables;
         }
@@ -40,6 +40,13 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         {
             var name = syntax.IdentifierToken;
             var boundExpresssion = BindExpression(syntax.Expression);
+
+            variables[name.Identifier] = new Symbol
+            {
+                Type = boundExpresssion.Type,
+                Value = null,
+            };
+            
             return new BoundAssignementExpression(name, boundExpresssion);
         }
 
