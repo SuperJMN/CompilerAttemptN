@@ -45,8 +45,8 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
         private static readonly ExpressionParser Disjunction = Parse.Chain(And.Or(Or), Addend, ParserExtensions.ToBinary);
         private static readonly ExpressionParser Equality = Parse.Chain(Equal.Or(NotEqual), Disjunction, ParserExtensions.ToBinary);
 
-        private static readonly ExpressionParser Assignment = Parse.Chain(Assign, Equality,
-            (op, left, right) => new AssignmentExpressionSyntax((NameExpressionSyntax) left, op, right) as ExpressionSyntax);
+        private static readonly ExpressionParser Assignment = Parse.ChainRight(Assign, Equality,
+            (op, left, right) => new AssignmentExpressionSyntax((NameExpressionSyntax) left, op, right));
         private static readonly ExpressionParser Expression = Assignment;
 
         public static readonly TokenListParser<SyntaxKind, SyntaxTree> Tree = Expression.AtEnd().Select(x => new SyntaxTree(new List<string>(), x, null));
