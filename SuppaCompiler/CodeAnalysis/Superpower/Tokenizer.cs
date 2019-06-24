@@ -24,6 +24,7 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
                 .Match(Character.EqualTo('/'), SyntaxKind.SlashToken)
                 .Match(Character.EqualTo('('), SyntaxKind.OpenParenthesisToken)
                 .Match(Character.EqualTo(')'), SyntaxKind.CloseParenthesisToken)
+                .Match(Span.Regex("\\w*"), SyntaxKind.IdentifierToken)
                 .Build();
         }
     }

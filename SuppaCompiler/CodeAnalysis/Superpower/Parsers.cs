@@ -34,7 +34,7 @@ namespace SuppaCompiler.CodeAnalysis.Superpower
         private static readonly ExpressionParser ParenthesizedExpresion = Parse.Ref(() => Expression.Between(Token.EqualTo(SyntaxKind.OpenParenthesisToken), Token.EqualTo(SyntaxKind.CloseParenthesisToken)));
         private static readonly ExpressionParser Factor = ParenthesizedExpresion.Or(Item);
         private static readonly ExpressionParser Operand =
-            (from op in Subtraction.Or(Addition)
+            (from op in Subtraction.Or(Addition).Or(Negation)
                 from factor in Factor
                 select (ExpressionSyntax)new UnaryExpressionSyntax(op, factor)).Or(Factor).Named("expression");
 
