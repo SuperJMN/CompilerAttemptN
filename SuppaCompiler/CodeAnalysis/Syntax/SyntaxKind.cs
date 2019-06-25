@@ -2,6 +2,8 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
 {
     public enum SyntaxKind
     {
+        Invalid,
+        
         // Tokens
         NumberToken,
         PlusToken,

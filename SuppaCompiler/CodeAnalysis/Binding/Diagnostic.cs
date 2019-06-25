@@ -15,7 +15,7 @@ namespace SuppaCompiler.CodeAnalysis.Binding
 
         public override string ToString()
         {
-            return $"{Span.Position}: {Message}";
+            return $"{Span.Position.Absolute}: {Message}";
         }
     }
 }

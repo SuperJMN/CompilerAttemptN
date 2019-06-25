@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Superpower.Model;
 using SuppaCompiler.CodeAnalysis.Syntax;
 
 namespace SuppaCompiler.CodeAnalysis.Binding
@@ -30,6 +28,8 @@ namespace SuppaCompiler.CodeAnalysis.Binding
                     return BindNameExpression((NameExpressionSyntax)syntax);
                 case SyntaxKind.AssigmentExpression:
                     return BindAssigmentExpression((AssignmentExpressionSyntax)syntax);
+                case SyntaxKind.Invalid:
+                    return new InvalidBoundExpression();
 
                 default:
                     throw new Exception($"Unexpected syntax {syntax.Kind}");
@@ -96,58 +96,6 @@ namespace SuppaCompiler.CodeAnalysis.Binding
             }
 
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
-        }
-    }
-
-    internal class BoundAssignementExpression : BoundExpression
-    {
-        public NameExpressionSyntax Name { get; }
-        public BoundExpression Expression { get; }
-
-        public BoundAssignementExpression(NameExpressionSyntax name, BoundExpression expression)
-        {
-            Name = name;
-            Expression = expression;
-        }
-
-        public override BoundNodeKind Kind => BoundNodeKind.AssignmentExpression;
-        public override Type Type => Expression.Type;
-    }
-
-    internal class BoundVariableExpression : BoundExpression
-    {
-        public string Name { get; }
-        public override Type Type { get; }
-
-        public BoundVariableExpression(string name, Type type)
-        {
-            Name = name;
-            Type = type;
-        }
-
-        public override BoundNodeKind Kind => BoundNodeKind.VariableExpression;
-    }
-
-    internal class DiagnosticBag : Collection<Diagnostic>
-    {
-        private void Report(TextSpan span, string message)
-        {
-            Add(new Diagnostic(span, message));
-        }
-
-        public void ReportUndefinedUnaryOperator(TextSpan span, string operatorStr, Type operandType)
-        {
-            Add(new Diagnostic(span, $"Cannot find operator {operatorStr} for type {operandType}"));
-        }
-
-        public void ReportUndefinedBinaryOperator(TextSpan span, string operatorStr, Type leftType, Type rightType)
-        {
-            Add(new Diagnostic(span, $"Cannot find operator {operatorStr} for type {leftType} and {rightType}"));
-        }
-
-        public void ReportUndefinedName(string name)
-        {
-            Add(new Diagnostic(new TextSpan(), $"Cannot find name {name}"));
         }
     }
 }

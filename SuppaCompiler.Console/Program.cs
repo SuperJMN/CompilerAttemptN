@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using Superpower;
 using SuppaCompiler.CodeAnalysis;
 using SuppaCompiler.CodeAnalysis.Superpower;
 using SuppaCompiler.CodeAnalysis.Syntax;
@@ -35,39 +35,30 @@ namespace SuppaCompiler.Console
                     continue;
                 }
 
-                try
+                var syntaxTree = Parser.Parse(line);
+                var compilation = new Compilation(syntaxTree);
+                var evaluation = compilation.Evaluate(variables);
+
+                if (showTree)
                 {
-                    var syntaxTree = Parsers.Tree.Parse(Tokenizer.Create().Tokenize(line));
-                    var compilation = new Compilation(syntaxTree);
-                    var result = compilation.Evaluate(variables);
-                    
-                    if (showTree)
-                    {
-                        System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                        PrettyPrint(syntaxTree.Root);
-                        System.Console.ResetColor();
-                    }
-
-                    if (!result.Diagnostics.Any())
-                    {
-                        System.Console.WriteLine(result.Value);
-                    }
-                    else
-                    {
-                        System.Console.ForegroundColor = ConsoleColor.DarkRed;
-
-                        foreach (var diagnostic in result.Diagnostics)
-                        {
-                            System.Console.WriteLine(diagnostic);
-                        }
-
-                        System.Console.ResetColor();
-                    }
+                    System.Console.ForegroundColor = ConsoleColor.DarkGray;
+                    PrettyPrint(syntaxTree.Root);
+                    System.Console.ResetColor();
                 }
-                catch (Exception e)
+
+                if (!evaluation.Diagnostics.Any())
+                {
+                    System.Console.WriteLine(evaluation.Value);
+                }
+                else
                 {
                     System.Console.ForegroundColor = ConsoleColor.DarkRed;
-                    System.Console.WriteLine(e.Message);
+
+                    foreach (var diagnostic in evaluation.Diagnostics)
+                    {
+                        System.Console.WriteLine(diagnostic);
+                    }
+
                     System.Console.ResetColor();
                 }
             }
