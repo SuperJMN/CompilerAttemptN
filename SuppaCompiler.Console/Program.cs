@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using SuppaCompiler.CodeAnalysis;
-using SuppaCompiler.CodeAnalysis.Superpower;
+﻿using SuppaCompiler.CodeAnalysis;
 using SuppaCompiler.CodeAnalysis.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SuppaCompiler.Console
 {
@@ -12,8 +10,7 @@ namespace SuppaCompiler.Console
     {
         private static void Main()
         {
-            var showTree = false;
-            var variables = new Dictionary<string, Symbol>();
+            var dictionary = new Dictionary<string, Symbol>();
 
             while (true)
             {
@@ -22,44 +19,13 @@ namespace SuppaCompiler.Console
                 if (string.IsNullOrWhiteSpace(line))
                     return;
 
-                if (line == "#showTree")
+                var compiler = new Compiler();
+                var compilationResult = compiler.Compile(line, dictionary);
+
+                if (!compilationResult.Diagnostics.Any())
                 {
-                    showTree = !showTree;
-                    System.Console.WriteLine(showTree ? "Showing parse trees." : "Not showing parse trees");
-                    continue;
-                }
-
-                if (line == "#cls")
-                {
-                    System.Console.Clear();
-                    continue;
-                }
-
-                var syntaxTree = Parser.Parse(line);
-                var compilation = new Compilation(syntaxTree);
-                var evaluation = compilation.Evaluate(variables);
-
-                if (showTree)
-                {
-                    System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                    PrettyPrint(syntaxTree.Root);
-                    System.Console.ResetColor();
-                }
-
-                if (!evaluation.Diagnostics.Any())
-                {
-                    System.Console.WriteLine(evaluation.Value);
-                }
-                else
-                {
-                    System.Console.ForegroundColor = ConsoleColor.DarkRed;
-
-                    foreach (var diagnostic in evaluation.Diagnostics)
-                    {
-                        System.Console.WriteLine(diagnostic);
-                    }
-
-                    System.Console.ResetColor();
+                    var evaluation = new Evaluator(compilationResult.BoundExpression, dictionary).Evaluate();
+                    System.Console.WriteLine(evaluation);
                 }
             }
         }

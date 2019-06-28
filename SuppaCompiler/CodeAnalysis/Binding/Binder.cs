@@ -14,7 +14,7 @@ namespace SuppaCompiler.CodeAnalysis.Binding
             this.variables = variables;
         }
 
-        public BoundExpression BindExpression(ExpressionSyntax syntax)
+        public BoundExpression BindExpression(SyntaxNode syntax)
         {
             switch (syntax.Kind)
             {

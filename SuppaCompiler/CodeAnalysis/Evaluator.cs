@@ -4,7 +4,7 @@ using SuppaCompiler.CodeAnalysis.Binding;
 
 namespace SuppaCompiler.CodeAnalysis
 {
-    internal sealed class Evaluator
+    public sealed class Evaluator
     {
         private readonly BoundExpression root;
         private readonly IDictionary<string, Symbol> variables;
