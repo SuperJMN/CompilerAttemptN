@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Linq;
 using SuppaCompiler.CodeAnalysis.Syntax;
 
 namespace SuppaCompiler.CodeAnalysis.Binding
@@ -13,7 +15,18 @@ namespace SuppaCompiler.CodeAnalysis.Binding
             this.scope = scope;
         }
 
-        public BoundExpression BindExpression(SyntaxNode syntax)
+        public BindResult Bind(SyntaxNode syntax)
+        {
+            var boundExpression = BindCore(syntax);
+            if (Diagnostics.Any())
+            {
+                return new BindResult(Diagnostics);
+            }
+
+            return new BindResult(boundExpression);
+        }
+
+        private BoundExpression BindCore(SyntaxNode syntax)
         {
             switch (syntax.Kind)
             {
@@ -24,9 +37,9 @@ namespace SuppaCompiler.CodeAnalysis.Binding
                 case SyntaxKind.BinaryExpression:
                     return BindBinaryExpression((BinaryExpressionSyntax) syntax);
                 case SyntaxKind.NameExpression:
-                    return BindNameExpression((NameExpressionSyntax)syntax);
+                    return BindNameExpression((NameExpressionSyntax) syntax);
                 case SyntaxKind.AssigmentExpression:
-                    return BindAssigmentExpression((AssignmentExpressionSyntax)syntax);
+                    return BindAssigmentExpression((AssignmentExpressionSyntax) syntax);
                 case SyntaxKind.Invalid:
                     return new InvalidBoundExpression();
 
@@ -38,7 +51,7 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         private BoundExpression BindAssigmentExpression(AssignmentExpressionSyntax syntax)
         {
             var name = syntax.IdentifierToken;
-            var boundExpresssion = BindExpression(syntax.Expression);
+            var boundExpresssion = BindCore(syntax.Expression);
 
             scope.Declare(name.Identifier, new Symbol
             {
@@ -52,13 +65,12 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
             var name = syntax.Identifier;
-            if (scope.TryGet(name, out _))
+            if (scope.TryGet(name, out var symbol))
             {
-                var type = typeof(int);
-                return new BoundVariableExpression(name, type);
+                return new BoundVariableExpression(name, symbol.Type);
             }
 
-            Diagnostics.ReportUndefinedName(name);
+            Diagnostics.ReportUndefinedName(syntax.IdentifierToken.InnerToken.Span, name);
             return new BoundLiteralExpression(0);
         }
 
@@ -70,12 +82,12 @@ namespace SuppaCompiler.CodeAnalysis.Binding
 
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
         {
-            var boundOperand = BindExpression(syntax.Operand);
+            var boundOperand = BindCore(syntax.Operand);
             var boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundOperand.Type);
 
             if (boundOperator == null)
             {
-                Diagnostics.ReportUndefinedUnaryOperator(syntax.OperatorToken.InnerToken.Span, syntax.OperatorToken.Span.ToStringValue(), boundOperand.Type);
+                Diagnostics.ReportUndefinedUnaryOperator(syntax.OperatorToken.InnerToken.Span, syntax.OperatorToken.InnerToken.Span.ToStringValue(), boundOperand.Type);
                 return boundOperand;
             }
 
@@ -84,8 +96,8 @@ namespace SuppaCompiler.CodeAnalysis.Binding
 
         private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax)
         {
-            var boundLeft = BindExpression(syntax.Left);
-            var boundRight = BindExpression(syntax.Right);
+            var boundLeft = BindCore(syntax.Left);
+            var boundRight = BindCore(syntax.Right);
             var boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
 
             if (boundOperator == null)

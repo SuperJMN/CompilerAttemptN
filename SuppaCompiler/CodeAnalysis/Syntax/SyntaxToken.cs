@@ -13,10 +13,8 @@ namespace SuppaCompiler.CodeAnalysis.Syntax
         }
 
         public override SyntaxKind Kind => InnerToken.Kind;
-        public int Position { get; }
         public Token<SyntaxKind> InnerToken { get; }
         public object Value { get; }
-        public TextSpan Span { get; set; }
 
         public override IEnumerable<SyntaxNode> GetChildren()
         {

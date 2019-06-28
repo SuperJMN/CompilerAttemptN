@@ -1,7 +1,7 @@
-﻿using SuppaCompiler.CodeAnalysis;
-using SuppaCompiler.CodeAnalysis.Syntax;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SuppaCompiler.CodeAnalysis;
+using SuppaCompiler.CodeAnalysis.Syntax;
 using System.Linq;
 using SuppaCompiler.CodeAnalysis.Binding;
 
@@ -11,7 +11,7 @@ namespace SuppaCompiler.Console
     {
         private static void Main()
         {
-            var dictionary = new Scope();
+            var scope = new Scope();
 
             while (true)
             {
@@ -20,15 +20,52 @@ namespace SuppaCompiler.Console
                 if (string.IsNullOrWhiteSpace(line))
                     return;
 
+                if (line == "#reset")
+                {
+                    scope = new Scope();
+                    continue;
+                }
+
+                if (line == "#cls")
+                {
+                    System.Console.Clear();
+                    continue;
+                }
+
                 var compiler = new Compiler();
-                var compilationResult = compiler.Compile(line, dictionary);
+                var compilationResult = compiler.Compile(line, scope);
 
                 if (!compilationResult.Diagnostics.Any())
                 {
-                    var evaluation = new Evaluator(compilationResult.BoundExpression, dictionary).Evaluate();
-                    System.Console.WriteLine(evaluation);
+                    var evaluation = new Evaluator(compilationResult.BoundExpression, scope).Evaluate();
+                    ShowEvaluatedValue(evaluation);
                 }
+                else
+                {
+                    ShowDiagnostics(compilationResult.Diagnostics);
+                }
+
+                scope = new Scope(scope);
             }
+        }
+
+        private static void ShowEvaluatedValue(object evaluation)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Magenta;
+            System.Console.WriteLine(evaluation);
+            System.Console.ResetColor();
+        }
+
+        private static void ShowDiagnostics(IEnumerable<Diagnostic> diagnostics)
+        {
+            System.Console.ForegroundColor = ConsoleColor.Red;
+
+            foreach (var diagnostic in diagnostics)
+            {
+                System.Console.WriteLine(diagnostic);
+            }
+
+            System.Console.ResetColor();
         }
 
         static void PrettyPrint(SyntaxNode node, string indent = "", bool isLast = true)

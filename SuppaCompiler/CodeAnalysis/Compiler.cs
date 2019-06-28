@@ -15,8 +15,13 @@ namespace SuppaCompiler.CodeAnalysis
 
             if (!parseResult.Diagnostics.Any())
             {
-                var boundExpression =  binder.BindExpression(parseResult.Syntax);
-                return new CompileResult(boundExpression);
+                var bindResult =  binder.Bind(parseResult.Syntax);
+                if (!bindResult.Diagnostics.Any())
+                {
+                    return new CompileResult(bindResult.BoundExpression);
+                }
+
+                return new CompileResult(bindResult.Diagnostics);
             }
 
             return new CompileResult(parseResult.Diagnostics);

@@ -13,17 +13,17 @@ namespace SuppaCompiler.CodeAnalysis.Binding
 
         public void ReportUndefinedUnaryOperator(TextSpan span, string operatorStr, Type operandType)
         {
-            Add(new Diagnostic(span, $"Cannot find operator {operatorStr} for type {operandType}"));
+            Add(new Diagnostic(span, $"Cannot find operator '{operatorStr}' for type '{operandType}'"));
         }
 
         public void ReportUndefinedBinaryOperator(TextSpan span, string operatorStr, Type leftType, Type rightType)
         {
-            Add(new Diagnostic(span, $"Cannot find operator {operatorStr} for type {leftType} and {rightType}"));
+            Add(new Diagnostic(span, $"Cannot find operator {operatorStr} for type '{leftType}' and '{rightType}'"));
         }
 
-        public void ReportUndefinedName(string name)
+        public void ReportUndefinedName(TextSpan span, string name)
         {
-            Add(new Diagnostic(new TextSpan(), $"Cannot find name {name}"));
+            Add(new Diagnostic(span, $"Cannot find name '{name}'"));
         }
     }
 }
