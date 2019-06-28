@@ -14,11 +14,11 @@ namespace SuppaCompiler.CodeAnalysis
             Syntax = syntax;
         }
 
-        public EvaluationResult Evaluate(IDictionary<string, Symbol> variables)
+        public EvaluationResult Evaluate(Scope scope)
         {
-            var binder = new Binder(variables);
+            var binder = new Binder(scope);
             var boundExpression = binder.BindExpression(Syntax.Root);
-            var evaluator = new Evaluator(boundExpression, variables);
+            var evaluator = new Evaluator(boundExpression, scope);
 
             var diagnostics = Syntax.Diagnostics.Concat(binder.Diagnostics).ToArray();
             if (diagnostics.Any())

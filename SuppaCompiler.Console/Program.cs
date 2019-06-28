@@ -3,6 +3,7 @@ using SuppaCompiler.CodeAnalysis.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SuppaCompiler.CodeAnalysis.Binding;
 
 namespace SuppaCompiler.Console
 {
@@ -10,7 +11,7 @@ namespace SuppaCompiler.Console
     {
         private static void Main()
         {
-            var dictionary = new Dictionary<string, Symbol>();
+            var dictionary = new Scope();
 
             while (true)
             {

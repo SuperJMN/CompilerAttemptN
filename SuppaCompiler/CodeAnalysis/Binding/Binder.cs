@@ -1,17 +1,16 @@
 using System;
-using System.Collections.Generic;
 using SuppaCompiler.CodeAnalysis.Syntax;
 
 namespace SuppaCompiler.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
-        private readonly IDictionary<string, Symbol> variables;
+        private readonly Scope scope;
         public readonly DiagnosticBag Diagnostics = new DiagnosticBag();
 
-        public Binder(IDictionary<string, Symbol> variables)
+        public Binder(Scope scope)
         {
-            this.variables = variables;
+            this.scope = scope;
         }
 
         public BoundExpression BindExpression(SyntaxNode syntax)
@@ -41,11 +40,11 @@ namespace SuppaCompiler.CodeAnalysis.Binding
             var name = syntax.IdentifierToken;
             var boundExpresssion = BindExpression(syntax.Expression);
 
-            variables[name.Identifier] = new Symbol
+            scope.Declare(name.Identifier, new Symbol
             {
                 Type = boundExpresssion.Type,
                 Value = null,
-            };
+            });
             
             return new BoundAssignementExpression(name, boundExpresssion);
         }
@@ -53,7 +52,7 @@ namespace SuppaCompiler.CodeAnalysis.Binding
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
             var name = syntax.Identifier;
-            if (variables.TryGetValue(name, out var value))
+            if (scope.TryGet(name, out _))
             {
                 var type = typeof(int);
                 return new BoundVariableExpression(name, type);

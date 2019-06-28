@@ -7,7 +7,7 @@ namespace SuppaCompiler.CodeAnalysis
 {
     public class Compiler
     {
-        public CompileResult Compile(string source, Dictionary<string, Symbol> symbols)
+        public CompileResult Compile(string source, Scope symbols)
         {
             var parser = new Parser();
             var parseResult = parser.Parse(source);
